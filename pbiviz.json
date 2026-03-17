@@ -1,0 +1,25 @@
+{
+    "visual": {
+      "name": "ifcLiteViewer",
+      "displayName": "IFC Lite Viewer",
+      "guid": "ifcLiteViewer",
+      "visualClassName": "Visual",
+      "version": "1.0.1.0",
+      "description": "IFC viewer with IFClite and Three.js",
+      "supportUrl": "https://example.com/support",
+      "gitHubUrl": "https://github.com/your-org/ifcLiteViewer"
+    },
+    "apiVersion": "5.3.0",
+    "author": {
+      "name": "IFC Viewer",
+      "email": "example@example.com"
+    },
+    "assets": {
+      "icon": "assets/icon.png"
+    },
+    "externalJS": [],
+    "style": "style/visual.less",
+    "capabilities": "capabilities.json",
+    "dependencies": "dependencies.json",
+    "stringResources": []
+  }

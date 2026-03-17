@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.ifc
+*.glb
+*.gltf
+.pbiviz/
+*.tmp
+.DS_Store
+Thumbs.db

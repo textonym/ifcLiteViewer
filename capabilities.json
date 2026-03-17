@@ -1,0 +1,46 @@
+{
+  "dataRoles": [
+    {
+      "name": "modelUrl",
+      "kind": "Grouping",
+      "displayName": "IFC Model URL"
+    }
+  ],
+  "dataViewMappings": [
+    {
+      "conditions": [
+        {
+          "modelUrl": { "min": 0, "max": 1 }
+        }
+      ],
+      "table": {
+        "rows": { "for": { "in": "modelUrl" } }
+      }
+    }
+  ],
+  "objects": {
+    "sceneSettings": {
+      "properties": {
+        "modelUrl": {
+          "type": { "text": true }
+        },
+        "backgroundColor": {
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "lightIntensity": {
+          "type": { "numeric": true }
+        },
+        "enableOrbitControls": {
+          "type": { "bool": true }
+        }
+      }
+    }
+  },
+  "sorting": {
+    "default": {}
+  },
+  "supportsHighlight": false,
+  "supportsEmptyDataView": true,
+  "supportsLandingPage": true,
+  "privileges": []
+}
