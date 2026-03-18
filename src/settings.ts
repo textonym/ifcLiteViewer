@@ -28,51 +28,8 @@
 
 import { formattingSettings } from "powerbi-visuals-utils-formattingmodel";
 
-import FormattingSettingsCard = formattingSettings.SimpleCard;
-import FormattingSettingsSlice = formattingSettings.Slice;
 import FormattingSettingsModel = formattingSettings.Model;
 
-/**
- * Scene Formatting Card
- */
-class SceneSettingsCard extends FormattingSettingsCard {
-    modelUrl = new formattingSettings.TextInput({
-        name: "modelUrl",
-        displayName: "Model URL (GLB/GLTF)",
-        value: "",
-        placeholder: "https://example.com/model.glb"
-    });
-
-    backgroundColor = new formattingSettings.ColorPicker({
-        name: "backgroundColor",
-        displayName: "Background Color",
-        value: { value: "#1a1a1a" }
-    });
-
-    lightIntensity = new formattingSettings.NumUpDown({
-        name: "lightIntensity",
-        displayName: "Light Intensity",
-        value: 0.8
-    });
-
-    enableOrbitControls = new formattingSettings.ToggleSwitch({
-        name: "enableOrbitControls",
-        displayName: "Enable Orbit Controls",
-        value: true
-    });
-
-    name: string = "sceneSettings";
-    displayName: string = "Scene Settings";
-    slices: Array<FormattingSettingsSlice> = [this.modelUrl, this.backgroundColor, this.lightIntensity, this.enableOrbitControls];
-}
-
-/**
-* visual settings model class
-*
-*/
 export class VisualFormattingSettingsModel extends FormattingSettingsModel {
-    // Create formatting settings model formatting cards
-    sceneCard = new SceneSettingsCard();
-
-    cards = [this.sceneCard];
+    cards = [];
 }

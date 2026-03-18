@@ -6,17 +6,20 @@
     "type": "default_template_value",
     "url": "default_template_value"
   },
-  "license": "MIT",
+  "license": "MIT AND MPL-2.0",
   "scripts": {
     "pbiviz": "pbiviz",
     "start": "pbiviz start",
     "package": "pbiviz package",
-    "lint": "npx eslint ."
+    "lint": "npx eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "postinstall": "node scripts/inline-wasm.mjs && node scripts/patch-webpack.mjs && node scripts/patch-logger.mjs"
   },
   "dependencies": {
+    "@ifc-lite/embed-sdk": "^1.14.3",
     "@ifc-lite/geometry": "^1.14.3",
-    "@ifc-lite/parser": "^2.1.2",
-    "@ifc-lite/renderer": "^1.14.4",
     "@types/d3": "7.4.3",
     "@types/three": "^0.183.1",
     "d3": "7.9.0",
@@ -27,8 +30,12 @@
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@vitest/coverage-v8": "^4.1.0",
     "eslint": "^9.11.1",
     "eslint-plugin-powerbi-visuals": "^1.0.0",
-    "typescript": "5.5.4"
+    "jsdom": "^29.0.0",
+    "powerbi-visuals-tools": "^7.0.2",
+    "typescript": "5.5.4",
+    "vitest": "^4.1.0"
   }
 }

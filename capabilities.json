@@ -3,44 +3,38 @@
     {
       "name": "modelUrl",
       "kind": "Grouping",
-      "displayName": "IFC Model URL"
+      "displayName": "IFC Model URL",
+      "description": "A column containing the URL of the IFC file to display"
     }
   ],
   "dataViewMappings": [
     {
       "conditions": [
         {
-          "modelUrl": { "min": 0, "max": 1 }
+          "modelUrl": { "max": 1 }
         }
       ],
       "table": {
-        "rows": { "for": { "in": "modelUrl" } }
-      }
-    }
-  ],
-  "objects": {
-    "sceneSettings": {
-      "properties": {
-        "modelUrl": {
-          "type": { "text": true }
-        },
-        "backgroundColor": {
-          "type": { "fill": { "solid": { "color": true } } }
-        },
-        "lightIntensity": {
-          "type": { "numeric": true }
-        },
-        "enableOrbitControls": {
-          "type": { "bool": true }
+        "rows": {
+          "select": [
+            { "for": { "in": "modelUrl" } }
+          ]
         }
       }
     }
-  },
+  ],
+  "objects": {},
   "sorting": {
     "default": {}
   },
   "supportsHighlight": false,
   "supportsEmptyDataView": true,
   "supportsLandingPage": true,
-  "privileges": []
+  "privileges": [
+    {
+      "name": "WebAccess",
+      "essential": true,
+      "parameters": ["*"]
+    }
+  ]
 }

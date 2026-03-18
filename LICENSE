@@ -24,7 +24,8 @@ SOFTWARE.
 
 Appendix: Third-Party Licenses
 
-This project utilizes dependencies and libraries subject to the following licenses:
+This project embeds the ifc-lite viewer via @ifc-lite/embed-sdk, which is
+licensed under the Mozilla Public License Version 2.0 (MPL-2.0).
 
-- IFC-Lite (louistrue/ifc-lite): Mozilla Public License Version 2.0 (MPL-2.0)
-  https://github.com/louistrue/ifc-lite/blob/main/LICENSE
+Source: https://github.com/louistrue/ifc-lite
+Full MPL-2.0 text: see LICENSES/MPL-2.0.txt

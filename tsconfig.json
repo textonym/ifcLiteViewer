@@ -9,13 +9,13 @@
         "outDir": "./.tmp/build/",
         "moduleResolution": "bundler",
         "declaration": true,
+        "skipLibCheck": true,
         "lib": [
             "es2022",
             "dom"
         ]
     },
     "files": [
-        "./src/visual.ts",
-        "./src/ifcViewer.ts"
+        "./src/visual.ts"
     ]
 }
