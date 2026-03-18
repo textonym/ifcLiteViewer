@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GeometryProcessor, type MeshData } from "@ifc-lite/geometry";
+import { initSync } from "@ifc-lite/wasm";
+import { getWasmBytes } from "./wasm-inline";
 
 export class IfcThreeViewer {
     private scene: THREE.Scene;
@@ -50,6 +52,8 @@ export class IfcThreeViewer {
     async init(): Promise<void> {
         this.startRenderLoop();
         try {
+            // Pre-initialize WASM with inlined bytes to avoid sandbox fetch issues
+            initSync({ module: getWasmBytes() });
             this.processor = new GeometryProcessor();
             await this.processor.init();
             this.onProgress?.("Viewer ready");

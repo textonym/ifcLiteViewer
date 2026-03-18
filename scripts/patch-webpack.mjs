@@ -1,7 +1,9 @@
 /**
- * Patch powerbi-visuals-tools webpack config to inline .wasm files.
- * Power BI's sandbox serves assets from its own domain, breaking WASM loading.
- * Inlining as base64 data URLs avoids the CORS/path issue.
+ * Patch powerbi-visuals-tools webpack config for Power BI sandbox compatibility.
+ *
+ * 1. Adds .wasm to the asset/inline rule (base64 data URL)
+ * 2. Disables webpack's new URL() asset emission for .wasm files
+ *    so the WASM bytes are inlined instead of fetched separately.
  */
 import { readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
@@ -11,7 +13,7 @@ const configPath = resolve('node_modules/powerbi-visuals-tools/lib/webpack.confi
 try {
     let content = readFileSync(configPath, 'utf8');
 
-    if (content.includes('|wasm)')) {
+    if (content.includes('PATCHED_FOR_PBIVIZ')) {
         console.log('[patch-webpack] Already patched, skipping.');
         process.exit(0);
     }
@@ -22,8 +24,22 @@ try {
         '.(woff|ttf|ico|woff2|jpg|jpeg|png|webp|gif|svg|eot|wasm)$'
     );
 
+    // Add a rule to disable new URL() asset emission for .wasm files
+    // This must go BEFORE the general asset/inline rule
+    const wasmRule = `
+            // PATCHED_FOR_PBIVIZ: Force .wasm to inline as base64 data URL
+            {
+                test: /\\.wasm$/,
+                type: 'asset/inline',
+            },`;
+
+    content = content.replace(
+        'rules: [',
+        `rules: [${wasmRule}`
+    );
+
     writeFileSync(configPath, content, 'utf8');
-    console.log('[patch-webpack] Patched webpack config to inline .wasm files.');
+    console.log('[patch-webpack] Patched webpack config for WASM inlining.');
 } catch (err) {
     console.warn('[patch-webpack] Could not patch webpack config:', err.message);
 }
