@@ -48,10 +48,15 @@ export class IfcThreeViewer {
     }
 
     async init(): Promise<void> {
-        this.processor = new GeometryProcessor();
-        await this.processor.init();
         this.startRenderLoop();
-        this.onProgress?.("Viewer ready");
+        try {
+            this.processor = new GeometryProcessor();
+            await this.processor.init();
+            this.onProgress?.("Viewer ready");
+        } catch (err) {
+            console.warn("[Geometry] init", err);
+            this.onProgress?.("Viewer ready (geometry engine unavailable)");
+        }
     }
 
     async loadFromUrl(url: string): Promise<void> {

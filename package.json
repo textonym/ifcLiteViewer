@@ -14,7 +14,8 @@
     "lint": "npx eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "postinstall": "node scripts/patch-webpack.mjs"
   },
   "dependencies": {
     "@ifc-lite/embed-sdk": "^1.14.3",
