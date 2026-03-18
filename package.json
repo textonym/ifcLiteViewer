@@ -11,7 +11,10 @@
     "pbiviz": "pbiviz",
     "start": "pbiviz start",
     "package": "pbiviz package",
-    "lint": "npx eslint ."
+    "lint": "npx eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@ifc-lite/embed-sdk": "^1.14.3",
@@ -23,8 +26,11 @@
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@vitest/coverage-v8": "^4.1.0",
     "eslint": "^9.11.1",
     "eslint-plugin-powerbi-visuals": "^1.0.0",
-    "typescript": "5.5.4"
+    "jsdom": "^29.0.0",
+    "typescript": "5.5.4",
+    "vitest": "^4.1.0"
   }
 }
