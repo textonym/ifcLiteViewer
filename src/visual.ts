@@ -2,190 +2,104 @@
 
 import powerbi from "powerbi-visuals-api";
 import "./../style/visual.less";
+import { IFCLiteEmbed, EmbedOptions } from "@ifc-lite/embed-sdk";
 
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
-import VisualUpdateType = powerbi.VisualUpdateType;
-import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
-
-import { IfcViewer } from "./ifcViewer";
-import { VisualFormattingSettingsModel } from "./settings";
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
 export class Visual implements IVisual {
     private target: HTMLElement;
-    private canvas: HTMLCanvasElement;
-    private fileInput: HTMLInputElement;
-    private statusDiv: HTMLDivElement;
-    private overlay: HTMLDivElement;
-    private overlayText: HTMLDivElement;
-    private viewer: IfcViewer;
-    private viewerReady: Promise<void>;
-    private lastUrl: string | null = null;
-    
-    private formattingSettings: VisualFormattingSettingsModel = new VisualFormattingSettingsModel();
-    private formattingSettingsService: FormattingSettingsService;
+    private embed: IFCLiteEmbed | null = null;
+    private selectionManager: ISelectionManager;
+    private currentModelUrl: string | null = null;
+    private container: HTMLDivElement;
 
     constructor(options: VisualConstructorOptions) {
         this.target = options.element;
-        this.formattingSettingsService = new FormattingSettingsService();
+        this.selectionManager = options.host.createSelectionManager();
 
-        // Root container
-        const root = document.createElement("div");
-        root.className = "ifc-viewer-root";
-        this.target.appendChild(root);
-
-        // Top bar: button + status
-        const topBar = document.createElement("div");
-        topBar.className = "ifc-viewer-topbar";
-        root.appendChild(topBar);
-
-        const localButtonLabel = document.createElement("label");
-        localButtonLabel.textContent = "Load local GLB/GLTF";
-        localButtonLabel.className = "ifc-viewer-btn";
-        topBar.appendChild(localButtonLabel);
-
-        this.fileInput = document.createElement("input");
-        this.fileInput.type = "file";
-        this.fileInput.accept = ".glb,.gltf";
-        this.fileInput.style.display = "none";
-        localButtonLabel.appendChild(this.fileInput);
-
-        this.statusDiv = document.createElement("div");
-        this.statusDiv.textContent = "Ready";
-        this.statusDiv.className = "ifc-viewer-status";
-        topBar.appendChild(this.statusDiv);
-
-        // Canvas container
-        const canvasContainer = document.createElement("div");
-        canvasContainer.className = "ifc-viewer-canvas-container";
-        root.appendChild(canvasContainer);
-
-        this.canvas = document.createElement("canvas");
-        canvasContainer.appendChild(this.canvas);
-        
-        // Loading overlay
-        this.overlay = document.createElement("div");
-        this.overlay.className = "ifc-viewer-overlay";
-        canvasContainer.appendChild(this.overlay);
-        
-        const spinner = document.createElement("div");
-        spinner.className = "ifc-spinner";
-        this.overlay.appendChild(spinner);
-        
-        this.overlayText = document.createElement("div");
-        this.overlayText.className = "ifc-viewer-overlay-text";
-        this.overlayText.textContent = "Loading...";
-        this.overlay.appendChild(this.overlayText);
-
-        // Initialize Three.js viewer
-        this.viewer = new IfcViewer(this.canvas);
-        this.viewer.onProgress = (msg: string) => {
-            this.statusDiv.textContent = msg;
-            this.overlayText.textContent = msg;
-        };
-        this.viewerReady = this.viewer.init().catch((err) => {
-            console.error("Viewer init failed", err);
-            this.statusDiv.textContent = "Viewer init failed";
-            this.overlayText.textContent = "Initialization failed.";
-        });
-
-        // Local file handler
-        this.fileInput.addEventListener("change", () => {
-            const file = this.fileInput.files && this.fileInput.files[0];
-            if (!file) {
-                return;
-            }
-            this.lastUrl = null; // switch to local mode
-            this.showLoadOverlay(`Loading local model: ${file.name}`);
-            void this.loadLocalFile(file);
-        });
+        // Full-size container for the iframe
+        this.container = document.createElement("div");
+        this.container.style.cssText = "width:100%;height:100%;position:relative;";
+        this.target.appendChild(this.container);
     }
 
-    public update(options: VisualUpdateOptions) {
-        try {
-            const dataView = options.dataViews && options.dataViews.length > 0 ? options.dataViews[0] : undefined;
-
-            // Always try to populate formatting settings from the dataView (which includes metadata.objects
-            // from the formatting pane — available even with supportsEmptyDataView when no rows are bound)
-            if (dataView) {
-                this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(VisualFormattingSettingsModel, dataView);
-            }
-
-            const sceneCard = this.formattingSettings.sceneCard;
-
-            // Apply scene settings to viewer
-            if (this.viewer) {
-                this.viewer.setBackgroundColor(sceneCard.backgroundColor.value.value);
-                this.viewer.setLightIntensity(sceneCard.lightIntensity.value);
-                this.viewer.setOrbitControlsEnabled(sceneCard.enableOrbitControls.value);
-            }
-
-            // 1. Check the formatting pane text field for a URL
-            let url = (sceneCard.modelUrl.value || "").trim();
-
-            // 2. If not set in pane, check if a data row was bound (optional fallback)
-            if (!url && dataView?.table?.rows?.length) {
-                url = (dataView.table.rows[0][0] as string) || "";
-            }
-
-            if (!url || url === this.lastUrl) {
-                return; // no URL set, or already loaded
-            }
-
-            this.lastUrl = url;
-            this.showLoadOverlay("Downloading model from URL...");
-            void this.loadFromUrl(url);
-        } catch (e) {
-            console.error("Error in visual update:", e);
+    public async update(options: VisualUpdateOptions): Promise<void> {
+        const dataView = options.dataViews?.[0];
+        if (!dataView?.table?.rows?.length) {
+            this.destroyEmbed();
+            return;
         }
-    }
-    
-    /**
-     * Returns properties pane formatting model content hierarchies, properties and latest formatting values.
-     */
-    public getFormattingModel(): powerbi.visuals.FormattingModel {
-        return this.formattingSettingsService.buildFormattingModel(this.formattingSettings);
-    }
-    
-    private showLoadOverlay(msg: string) {
-        this.overlay.classList.add("visible");
-        this.overlayText.textContent = msg;
-        this.statusDiv.textContent = msg;
-    }
-    
-    private hideLoadOverlay() {
-        this.overlay.classList.remove("visible");
-    }
 
-    private async loadLocalFile(file: File): Promise<void> {
-        await this.viewerReady;
+        // Extract model URL from the first bound row
+        const urlIndex = 0;
+        const modelUrl = dataView.table.rows[0][urlIndex] as string;
+
+        if (!modelUrl || typeof modelUrl !== "string") {
+            this.destroyEmbed();
+            return;
+        }
+
+        // Only reinitialise if the URL changed
+        if (modelUrl === this.currentModelUrl && this.embed) return;
+
+        this.destroyEmbed();
+        this.currentModelUrl = modelUrl;
+
         try {
-            await this.viewer.loadFromFile(file);
-        } catch (err: any) {
-            console.error("Error loading local model", err);
-            const msg = err && err.message ? err.message : String(err);
-            this.statusDiv.textContent = `Error loading local model: ${msg}`;
-        } finally {
-            this.hideLoadOverlay();
+            const embedOptions: EmbedOptions = {
+                container: this.container,
+                modelUrl,
+                theme: "dark",
+                controls: "all",
+                hideAxis: false,
+                hideScale: false,
+            };
+
+            this.embed = await IFCLiteEmbed.create(embedOptions);
+
+            // Build selection IDs from the data view rows to enable cross-filtering
+            const selectionIds: ISelectionId[] = dataView.table.rows.map(
+                (_, i) =>
+                    options.host
+                        .createSelectionIdBuilder()
+                        .withTable(dataView.table, i)
+                        .createSelectionId()
+            );
+
+            this.embed.on("entity-selected", async () => {
+                if (selectionIds.length > 0) {
+                    await this.selectionManager.select(selectionIds[0]);
+                }
+            });
+
+            this.embed.on("entity-deselected", async () => {
+                await this.selectionManager.clear();
+            });
+        } catch (err) {
+            console.error("[ifcLiteViewer] Embed init failed:", err);
+            this.showError(String(err));
         }
     }
 
-    private async loadFromUrl(url: string): Promise<void> {
-        await this.viewerReady;
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            await this.viewer.loadFromArrayBuffer(arrayBuffer, "Processing 3D model");
-        } catch (err: any) {
-            console.error("Error loading model from URL", err);
-            const msg = err && err.message ? err.message : String(err);
-            this.statusDiv.textContent = `Error loading model from URL: ${msg}`;
-        } finally {
-            this.hideLoadOverlay();
+    private destroyEmbed(): void {
+        if (this.embed) {
+            this.embed.destroy();
+            this.embed = null;
         }
+        this.currentModelUrl = null;
+        // Clear any error overlays
+        this.container.querySelectorAll(".ifc-error").forEach(el => el.remove());
+    }
+
+    private showError(msg: string): void {
+        const el = document.createElement("div");
+        el.className = "ifc-error";
+        el.style.cssText = `position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#1a1a1a;color:#ff6b6b;font-family:sans-serif;font-size:13px;padding:16px;text-align:center;`;
+        el.textContent = `IFC Viewer error: ${msg}`;
+        this.container.appendChild(el);
     }
 }

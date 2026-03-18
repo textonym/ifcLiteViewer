@@ -5,7 +5,7 @@
       "guid": "ifcLiteViewer",
       "visualClassName": "Visual",
       "version": "1.0.1.0",
-      "description": "IFC viewer with IFClite and Three.js",
+      "description": "IFC viewer powered by @ifc-lite/embed-sdk",
       "supportUrl": "https://example.com/support",
       "gitHubUrl": "https://github.com/your-org/ifcLiteViewer"
     },
