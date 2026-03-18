@@ -49,9 +49,9 @@ This viewer is optimized for `.glb` models. Use the [ifc2glb-web-ifc](https://gi
 This visual is built upon several foundational open-source projects:
 
 - **[IFC-Lite](https://github.com/louistrue/ifc-lite)** by **Louis True** — For the core parsing, rendering architecture, and geometry handling that powers the Lite Viewer experience.
-- **[Three.js Authors](https://threejs.org/)** — For the 3D scene engine and rendering pipeline.
-- **[D3.js Authors](https://d3js.org/)** — For data manipulation and selection utilities.
-- **[Microsoft Power BI](https://learn.microsoft.com/en-us/power-bi/developer/visuals/)** — For the visuals API and developer platform.
+- **[Three.js](https://github.com/mrdoob/three.js)** — For the 3D scene engine and rendering pipeline.
+- **[D3.js](https://github.com/d3/d3)** — For data manipulation and selection utilities.
+- **[Microsoft Power BI Tools](https://github.com/microsoft/PowerBI-visuals-tools)** — For the visuals development platform.
 
 ## License
 MIT
