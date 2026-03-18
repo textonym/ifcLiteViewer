@@ -44,5 +44,14 @@ pbiviz package
 ### Loading Models
 This viewer is optimized for `.glb` models. Use the [ifc2glb-web-ifc](https://github.com/textonym/ifc2glb-web-ifc) tool to convert your IFC files into high-quality formats ready for this viewer.
 
+## Credits & Acknowledgements
+
+This visual is built upon several foundational open-source projects:
+
+- **[IFC-Lite](https://github.com/louistrue/ifc-lite)** by **Louis True** — For the core parsing, rendering architecture, and geometry handling that powers the Lite Viewer experience.
+- **[Three.js Authors](https://threejs.org/)** — For the 3D scene engine and rendering pipeline.
+- **[D3.js Authors](https://d3js.org/)** — For data manipulation and selection utilities.
+- **[Microsoft Power BI](https://learn.microsoft.com/en-us/power-bi/developer/visuals/)** — For the visuals API and developer platform.
+
 ## License
 MIT
